@@ -7,7 +7,7 @@
 - コードのダウンロード
 - Yolo_deepsortの重みファイルのダウンロード
 - Dockerビルド
-- Docker実行
+- コンテナ起動＆映像送信
 
 ## NVIDIA Driver for Cuda on WSL
 https://developer.nvidia.com/cuda/wsl/download
@@ -28,10 +28,27 @@ and put it to src/weights.
 
 ## Docker build
 ```
-docker build -t robot-talking-to-people .
+docker build -t yolo_deepsort .
 ```
 
 # Run
+PC上でコンテナを起動してから、Sota上でUDPの送信を開始する。
+
+## PC
 ```
-docker run --name robot-talking-to-people --mount type=bind,source="$(pwd)"/src,target=/tmp --gpus all --rm robot-talking-to-people python sample.py
+cd yolo_deepsort
+docker run --rm -it --name yolo_deepsort --mount type=bind,source="$(pwd)"/src,target=/tmp --gpus all yolo_deepsort python app.py --gpu
 ```
+
+## Sota
+Run FFmpeg for sending video from the camera.
+```
+cd ffmpeg
+./ffmpeg -f v4l2 -s 320x240 -thread_queue_size 8192 -i /dev/video0 -c:v libx264 -preset ultrafast -tune zerolatency -f h264 udp://<host's ip>:5000?pkt_size=1024
+```
+
+Sotaを使わずWindows PCのFFmpegを使う場合
+```
+ffmpeg -re -f dshow -i video="Surface Camera Front" -s 320x240 -r 30 -c:v libx264 -preset ultrafast -tune zerolatency -an -f h264 udp://localhost:5000?pkt_size=1024
+```
+※Surface～の部分に入れる文字列は`ffmpeg -list_devices true -f dshow -i dummy`で調べられる。
