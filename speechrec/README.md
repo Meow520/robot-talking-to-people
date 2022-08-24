@@ -19,7 +19,7 @@ docker run --rm -it --name speechrec -p 5001:5001/udp --mount type=bind,source="
 Run FFmpeg for sending sound from the mic.
 ```
 cd ffmpeg
-./ffmpeg -channels 1 -f alsa -thread_queue_size 8192 -i hw:2 -preset ultrafast -tune zerolatency -ac 1 -c:a pcm_s16le -ar 16000 -f s16le udp://[host's ip]:5001?pkt_size=1024
+./ffmpeg -channels 1 -f alsa -thread_queue_size 8192 -i hw:2 -preset ultrafast -tune zerolatency -ac 1 -c:a pcm_s16le -ar 16000 -f s16le udp://<host's ip>:5001?pkt_size=1024
 ```
 
 Sotaを使わずWindows PCのFFmpegを使う場合
