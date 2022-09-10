@@ -80,7 +80,7 @@ def main(args):
             # 認識結果をデータベースに挿入
             data = dict(timestamp=t_start, results=results)
             print(data)
-            # collection.insert_one(data)
+            collection.insert_one(data)
 
     except KeyboardInterrupt:
         pass

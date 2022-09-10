@@ -4,7 +4,7 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     && apt-get -y install --no-install-recommends \
     ffmpeg
 
-RUN pip install azure-cognitiveservices-speech ffmpeg-python pymongo
+RUN pip install azure-cognitiveservices-speech ffmpeg-python pymongo stomp.py
 
 RUN useradd -m -d /home/sota -s /bin/bash sota
 USER sota

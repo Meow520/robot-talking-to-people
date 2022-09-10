@@ -5,13 +5,19 @@ How to run mongodb.
 ```
 docker pull mongo
 ```
-# Create network
+## Dockerネットワークの作成
 ```
 docker network create -d bridge mongonet
 ```
-# Run
+
+## mongodb用のボリュームの作成
 ```
-docker run --name mongo --net mongonet --rm mongo
+docker volume create --name mongovolume
+```
+
+## mongodbコンテナの起動
+```
+docker run --rm -it --net mongonet --mount type=volume,src=mongovolume,dst=/data/db -p 27017:27017 --name mongo mongo
 ```
 
 # Tips

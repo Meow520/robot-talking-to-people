@@ -24,21 +24,24 @@ def main(args):
         """ 認識中の結果をデータベースに挿入 """
         data = dict(timestamp=time.time(), state='recognizing', result=event.result.text)
         print(data)
-        # collection.insert_one(data)
+        collection.insert_one(data)
 
     def recognized_cb(event):
         """ 認識完了の結果をデータベースに挿入 """
         data = dict(timestamp=time.time(), state='recognized', result=event.result.text)
         print(data)
-        # collection.insert_one(data)
+        collection.insert_one(data)
 
     def session_started_cb(event):
+        print('Speech recognition session started.')
         pass
 
     def session_stopped_cb(event):
+        print('Speech recognition session stopped.')
         pass
 
     def canceled_cb(event):
+        print('Speech recognition is canceled.')
         pass
     
     # Connect callbacks to the events fired by the speech recognizer
