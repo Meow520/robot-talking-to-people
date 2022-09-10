@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # 概要
 人物認識器（yolo_deepsort）と音声認識器（speechrec）の出力をデータベース（MongoDB）に保持し、その結果に基づいて状態を変更し、その状態に応じた行動を実行するロボットシステムのサンプル。
 
@@ -16,21 +15,6 @@
 ```
 https://github.com/social-robotics-lab/robot-talking-to-people.git
 ```
-=======
-# robot-talking-to-people
-
-各種認識結果を保持するデータベース（mongodb）と人物認識器（yolo_deepsort）と音声認識器（speechrec）をDockerを使って連携するシステムのサンプル。
-
-
-# 起動順序
-1. Dockerネットワークの作成
-1. mongodb用のボリュームの作成
-1. mongodbコンテナの起動
-1. yolo_deepsortコンテナの起動
-1. speechrecコンテナの起動
-1. Sotaから映像を送信
-1. Sotaから音声を送信
->>>>>>> 50d2a7d6c5fe1caa1a3f366a0af8944c96a99c06
 
 ## Dockerネットワークの作成
 ```
@@ -42,7 +26,6 @@ docker network create -d bridge mongonet
 docker volume create --name mongovolume
 ```
 
-<<<<<<< HEAD
 ## mongodbイメージの作成
 ```
 docker pull mongo
@@ -114,18 +97,13 @@ docker build -t behavior_manager .
 1. Sotaから音声を送信
 
 
-=======
->>>>>>> 50d2a7d6c5fe1caa1a3f366a0af8944c96a99c06
 ## mongodbコンテナの起動
 ```
 docker run --rm -it --net mongonet --mount type=volume,src=mongovolume,dst=/data/db -p 27017:27017 --name mongo mongo
 ```
 
 ## yolo_deepsortコンテナの起動
-<<<<<<< HEAD
 GPUを使わない場合は`--gpus all`と`--gpu`を削除する。
-=======
->>>>>>> 50d2a7d6c5fe1caa1a3f366a0af8944c96a99c06
 ```
 cd yolo_deepsort
 docker run --rm -it --net mongonet --mount type=bind,source="$(pwd)"/src,target=/tmp -p 5000:5000/udp --gpus all yolo_deepsort python app.py --gpu
@@ -140,7 +118,6 @@ docker run --rm -it --net mongonet --mount type=bind,source="$(pwd)"/src,target=
 ## state_managerコンテナの起動
 ```
 cd state
-<<<<<<< HEAD
 docker run --rm -it --net mongonet --mount type=bind,source="$(pwd)"/src,target=/tmp state_manager python app.py
 ```
 
@@ -148,9 +125,6 @@ docker run --rm -it --net mongonet --mount type=bind,source="$(pwd)"/src,target=
 ```
 cd behavior
 docker run --rm -it --net mongonet --mount type=bind,source="$(pwd)"/src,target=/tmp behavior_manager python app.py
-=======
-docker run --rm -it --net mongonet --mount type=bind,source="$(pwd)"/src,target=/tmp state_manager python app.py [--db_host <db_host> --db_port <db_port>]
->>>>>>> 50d2a7d6c5fe1caa1a3f366a0af8944c96a99c06
 ```
 
 
@@ -161,7 +135,6 @@ cd ffmpeg
 ./ffmpeg -f v4l2 -s 320x240 -thread_queue_size 8192 -i /dev/video0 -c:v libx264 -preset ultrafast -tune zerolatency -f h264 udp://<host's ip>:5000?pkt_size=1024
 ```
 
-<<<<<<< HEAD
 ### Windows PCから映像を送信する場合
 Windows terminalで
 ```
@@ -169,15 +142,12 @@ ffmpeg -re -f dshow -i video="Surface Camera Front" -s 320x240 -r 30 -c:v libx26
 ```
 ※Surface～の部分に入れる文字列は`ffmpeg -list_devices true -f dshow -i dummy`で調べられる。
 
-=======
->>>>>>> 50d2a7d6c5fe1caa1a3f366a0af8944c96a99c06
 ## Sotaから音声を送信
 Sotaにログイン後
 ```
 cd ffmpeg
 ./ffmpeg -channels 1 -f alsa -thread_queue_size 8192 -i hw:2 -preset ultrafast -tune zerolatency -ac 1 -c:a pcm_s16le -ar 16000 -f s16le udp://<host's ip>:5001?pkt_size=1024
 ```
-<<<<<<< HEAD
 
 ### Windows PCから音声を送信する場合
 Windows terminalで
@@ -190,5 +160,3 @@ ffmpeg -f dshow -ac 1 -thread_queue_size 8192 -i audio="マイク配列 (Realtek
 # データベースの内容の確認
 MongoDB compassを利用する。公式サイト: https://www.mongodb.com/ja-jp/products/compass
 
-=======
->>>>>>> 50d2a7d6c5fe1caa1a3f366a0af8944c96a99c06
