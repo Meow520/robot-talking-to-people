@@ -2,12 +2,17 @@ import random
 import threading
 import time
 import pymongo
+import robotsp as sp
+import robotop as op
 
 # --------------------------------------------------------
 # BehaviorはStateと一対一対応する。
 # あるStateに入ると前回のStateで開始されたBehaviorは停止され、
 # 次のStateに対応するBehaviorが開始される。
 # --------------------------------------------------------
+IP = "192.168.50.216"
+PORT = 22222
+
 class Behavior:
     def __init__(self, db, document:dict):
         self.db = db
@@ -54,9 +59,11 @@ class Idle(Behavior):
         self.stop_idling_motion()
 
     def start_idling_motion(self):
+        op.play_idle_motion(IP, PORT)
         print('Idle motion started.')
     
     def stop_idling_motion(self):
+        op.stop_idle_motion(IP, PORT)
         print('Idle motion stopped.')
 
     def look_around(self):
@@ -72,7 +79,7 @@ class Idle(Behavior):
         print(f'Looked at {direction}.')
 
 
-class Greet(Behavior):
+class Greet(Idle):
     def __init__(self, db, document:dict):
         super().__init__(db, document)
         self.target_id = document['target_id']
@@ -91,13 +98,146 @@ class Greet(Behavior):
         self.stop_idling_motion()
 
     def start_idling_motion(self):
+        op.play_idle_motion(IP, PORT)
         print('Idle motion started.')
     
     def stop_idling_motion(self):
+        op.play_idle_motion(IP, PORT)
         print('Idle motion stopped.')
 
     def say(self):
+        d = sp.say_text(IP, PORT, "こんにちは")
+        time.sleep(d)
         print('Said hello.')
+
+    def look_at_target(self):
+        document = self.db['human_recognition'].find_one({ 
+            'results.id' : self.target_id
+        })
+        r = next(result for result in document['results'] if result['id'] == self.target_id)
+        x = r['x1'] + (r['x2'] - r['x1']) / 2.0
+        y = r['y1'] + (r['y2'] - r['y1']) / 4.0
+        # servo_map = calc_servo_map_head(x, y)
+        # pose = dict(Msec=500, ServoMap=servo_map)
+        # cl.play_pose(ip, port, pose)    
+        print(f'Look at target {self.target_id}, x={x}, y={y}')
+
+    
+class Ask(Greet):
+    def __init__(self, db, document:dict):
+        super().__init__(db, document)
+        self.target_id = document['target_id']
+    
+    def to_document(self):
+        return dict(name=self.__class__.__name__, target_id=self.target_id)
+
+    def run(self):
+        """ ターゲットを見て挨拶し、その後ターゲットを見続ける """
+        self.start_idling_motion()
+        self.look_at_target()
+        self.say()
+        while self.running:
+            self.look_at_target()
+            time.sleep(3)
+        self.stop_idling_motion()
+
+    def start_idling_motion(self):
+        op.play_idle_motion(IP, PORT)
+        print('Idle motion started.')
+    
+    def stop_idling_motion(self):
+        op.play_idle_motion(IP, PORT)
+        print('Idle motion stopped.')
+
+    def say(self):
+        d = sp.say_text(IP, PORT, "僕とお話ししませんか？")
+        time.sleep(d)
+        print('Ask talking with you.')
+
+    def look_at_target(self):
+        document = self.db['human_recognition'].find_one({ 
+            'results.id' : self.target_id
+        })
+        r = next(result for result in document['results'] if result['id'] == self.target_id)
+        x = r['x1'] + (r['x2'] - r['x1']) / 2.0
+        y = r['y1'] + (r['y2'] - r['y1']) / 4.0
+        # servo_map = calc_servo_map_head(x, y)
+        # pose = dict(Msec=500, ServoMap=servo_map)
+        # cl.play_pose(ip, port, pose)    
+        print(f'Look at target {self.target_id}, x={x}, y={y}')
+
+
+class Talk(Ask):
+    def __init__(self, db, document:dict):
+        super().__init__(db, document)
+        self.target_id = document['target_id']
+    
+    def to_document(self):
+        return dict(name=self.__class__.__name__, target_id=self.target_id)
+
+    def run(self):
+        """ ターゲットを見て挨拶し、その後ターゲットを見続ける """
+        self.look_at_target()
+        self.say()
+        while self.running:
+            self.look_at_target()
+            time.sleep(3)
+
+    def start_idling_motion(self):
+        op.play_idle_motion(IP, PORT)
+        print('Idle motion started.')
+    
+    def stop_idling_motion(self):
+        op.play_idle_motion(IP, PORT)
+        print('Idle motion stopped.')
+
+    def say(self):
+        dialog = ["今日は天気がいいですね。", ]
+        d = sp.say_text(IP, PORT, "今日は天気がいいですね。")
+        time.sleep(d)
+        print('Talking with you.')
+
+    def look_at_target(self):
+        document = self.db['human_recognition'].find_one({ 
+            'results.id' : self.target_id
+        })
+        r = next(result for result in document['results'] if result['id'] == self.target_id)
+        x = r['x1'] + (r['x2'] - r['x1']) / 2.0
+        y = r['y1'] + (r['y2'] - r['y1']) / 4.0
+        # servo_map = calc_servo_map_head(x, y)
+        # pose = dict(Msec=500, ServoMap=servo_map)
+        # cl.play_pose(ip, port, pose)    
+        print(f'Look at target {self.target_id}, x={x}, y={y}')
+
+
+class Bye(Ask):
+    def __init__(self, db, document:dict):
+        super().__init__(db, document)
+        self.target_id = document['target_id']
+    
+    def to_document(self):
+        return dict(name=self.__class__.__name__, target_id=self.target_id)
+
+    def run(self):
+        """ ターゲットを見て挨拶し、その後ターゲットを見続ける """
+        self.look_at_target()
+        self.say()
+        while self.running:
+            self.look_at_target()
+            time.sleep(3)
+
+    def start_idling_motion(self):
+        op.play_idle_motion(IP, PORT)
+        print('Idle motion started.')
+    
+    def stop_idling_motion(self):
+        op.play_idle_motion(IP, PORT)
+        print('Idle motion stopped.')
+
+    def say(self):
+        sp.say_text(IP, PORT, "さようなら")
+        d = time.sleep(d)
+        print('Said goobye.')
 
     def look_at_target(self):
         document = self.db['human_recognition'].find_one({ 
