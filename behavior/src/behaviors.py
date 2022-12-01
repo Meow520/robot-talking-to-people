@@ -192,10 +192,22 @@ class Talk(Ask):
         print('Idle motion stopped.')
 
     def say(self):
-        dialog = ["今日は天気がいいですね。", ]
-        d = sp.say_text(IP, PORT, "今日は天気がいいですね。")
-        time.sleep(d)
-        print('Talking with you.')
+        dialog = ["今日は天気がいいですね。", "調子はどうですか？", "今日もいい日になるといいですね。"]
+        for phrase, i in dialog:
+            if i != 0:
+                dt = 5
+                t = time.time()
+                n = self.db['speech_recognition'].count_documents({
+                    'timestamp': { '$gt': t - dt, '$lt': t },
+                    'state': {'$eq': "recognized"},
+                    'result' : { '$ne': ""}
+                })
+                if n == 0:
+                    break
+
+            d = sp.say_text(IP, PORT, phrase)
+            time.sleep(d)
+            #終わった後にByeにStateを変えたい。
 
     def look_at_target(self):
         document = self.db['human_recognition'].find_one({ 
